@@ -1,0 +1,144 @@
+// 当前文件提供 Forge 1.20.1 下的 Mixin 开发、构建和运行配置。
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+apply plugin: 'org.spongepowered.mixin'
+
+repositories {
+    flatDir {
+        dirs 'D:/AI临时文件/原罪之子/libs_1201',
+             'E:/模组/自用工具源码+产物/Minecraft Self MCP/Minecraft Self MCP-1.20.1-Forge/build/libs'
+        content {
+            includeGroup 'local'
+        }
+    }
+    maven {
+        url = 'https://www.cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+}
+
+version = project.mod_version
+group = project.mod_group_id
+
+base {
+    archivesName = "${project.mod_id}-${project.minecraft_version}-forge"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: project.mapping_channel, version: project.mapping_version
+    copyIdeResources = true
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
+            mods {
+                "${project.mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            property 'forge.enabledGameTestNamespaces', project.mod_id
+            property 'selfmcp.window', 'hidden'
+        }
+
+        server {
+            args '--nogui'
+        }
+
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "${project.mod_id}.refmap.json"
+    config "${project.mod_id}.mixins.json"
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    implementation fg.deobf("local:sons_of_sins:2.2.1")
+    implementation fg.deobf("curse.maven:jei-238222:8778011")
+
+    // 客户端专用测试桥接仅在非服务端任务中挂载
+    if (!gradle.startParameter.taskNames.any { it.toLowerCase().contains('server') }) {
+        def selfMcpJar = file('E:/模组/自用工具源码+产物/Minecraft Self MCP/Minecraft Self MCP-1.20.1-Forge/build/libs/self_mcp-1.20.1-forge-0.3.0.jar')
+        if (selfMcpJar.exists()) {
+            runtimeOnly fg.deobf("local:self_mcp-1.20.1-forge:0.3.0")
+        }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def replaceProperties = [
+            minecraft_version: project.minecraft_version,
+            minecraft_version_range: project.minecraft_version_range,
+            forge_version: project.forge_version,
+            forge_version_range: project.forge_version_range,
+            loader_version_range: project.loader_version_range,
+            sonsofsins_version_range: project.sonsofsins_version_range,
+            mod_id: project.mod_id,
+            mod_name: project.mod_name,
+            mod_license: project.mod_license,
+            mod_version: project.mod_version,
+            mod_authors: project.mod_authors,
+            mod_description: project.mod_description
+    ]
+    inputs.properties replaceProperties
+    filteringCharset = 'UTF-8'
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        filteringCharset = 'UTF-8'
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title': project.mod_id,
+                'Specification-Vendor': project.mod_authors,
+                'Specification-Version': '1',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.jar.archiveVersion,
+                'Implementation-Vendor': project.mod_authors,
+                'MixinConfigs': "${project.mod_id}.mixins.json"
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

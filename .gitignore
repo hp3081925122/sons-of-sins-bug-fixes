@@ -1,0 +1,53 @@
+# IDE 与本地编辑器
+.idea/
+**/.idea/
+.vscode/
+**/.vscode/
+*.iml
+*.ipr
+*.iws
+out/
+bin/
+.settings/
+.metadata/
+.classpath
+.project
+
+# 构建产物、缓存与运行目录
+*.class
+*.log
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+.gradle/
+**/.gradle/
+build/
+**/build/
+run/
+**/run/
+runs/
+**/runs/
+run-data/
+**/run-data/
+run-gametest/
+**/run-gametest/
+.gradletasknamecache
+**/build-log.txt
+repo/
+**/repo/
+
+# 本地审计与验收过程文档（不推送至公开仓库）
+*实测*.md
+*记录*.md
+*迁移文档*.md
+*核对*.md
+**/docs/
+
+# CurseForge 上传临时缓存与内嵌脚本
+curseforge/**/game-versions.json
+curseforge/**/upload-response-*.txt
+curseforge/**/upload-attempt-*.json
+curseforge/cf_create_project_fill.js
+
+# 系统文件
+Thumbs.db
+.DS_Store

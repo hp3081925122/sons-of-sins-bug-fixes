@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "minecraft": "1.20.1",
+      "artifact": "E:\\模组\\发cf的模组\\AAA-MCR bug 修复\\原罪之子bug修复\\1201-forge-sonsofsinsbugfix\\build\\libs\\sonsofsinsbugfix-1.20.1-forge-1.0.0.jar",
+      "sha256": "8646a047675230fd3f7de941224712d7192c7129865fa95062e8dd811ff46512",
+      "metadata": {
+        "changelog": "## Initial Release (1.0.0)\n\n- Requires **Sons of Sins** `2.2.1` or newer.\n- Fixes 7 grab-execution `stopRiding()` server crashes (resolving conflicts with PlayerRevive and other death-cancelling mods), dedicated-server `checkGamemode` client-class crashes, `workQueue` delayed-task leaks/exceptions, portable container `readShareTag` / `stillValid` / `ItemTossEvent` bugs, 11 unguarded advancement lookups, short organ tooltip & consecutive-underscore dimension name crashes, and `ItemStack.EMPTY` singleton corruption.\n- Fixes Urn double ash duplication on block break, portable Urn ash underflow, `AbstractArrow` projectile singleton corruption / pickup duping / infinite sky leaks, invincible entities (`BludTrade`, `BludAggressive`, `WistiverJaw`) blocking `/kill` and void damage, Sin Monster bedrock/container breaking & `mobGriefing` bypasses, Betrayed Guzzler weapon-stealing bugs (with config toggle), tamed pet teammate/PvP friendly fire, strict NBT `Inventory#contains` checks, and AOE attacks damaging dropped items/frames.\n- Caches all 24 entity `RenderLayer` models, Remnant Helmet/Chestplate `bakeLayer()` calls, all 10 Flesh Carcass GUI preview entities, and holiday `Calendar` checks; fixes Remnant Chestplate floating duplicate rendering & enchantment glint loss; adds safe fallback across all 30 organ render layers; fixes Ether Ghost color overflow (`> 1570`), Ether Soul particle rendering/rotation, `ViewportEvent` static `provider` memory leaks, idle Urn 10-tick self-scheduling (now event-driven), idle Blood block ticks, 64³ Curse entity scans, `AcidBloodstream` per-tick effect-removal event storms, read-only `getOrCreateTag()` NBT pollution, and 64–256 chunk entity tracking ranges.\n- Adds 22 missing block `MapColor` values, restores `FleshBlock` light occlusion, replaces hardcoded `SoulSteelChainBlock` pickaxe check with standard mining tags, registers missing `etheric_blood_imbibation` `RecipeType` & marks custom JEI recipes as special (eliminating 11 `Unknown recipe category` warnings), adds 8 entity loot tables with Looting support, and ships `en_us` / `zh_cn` / `fr_fr` TOP localization overrides.\n\n---\n\n## 首个正式版（1.0.0）\n\n- 前置要求 **Sons of Sins（原罪之子）** `2.2.1` 及以上版本。\n- 修复 7 处抓人处决 `stopRiding()` 空指针炸服（解决与 PlayerRevive 等取消死亡模组冲突）、专用服务端 `checkGamemode` 客户端类崩溃、`workQueue` 延迟队列泄漏与异常击穿、便携容器 `readShareTag` / `stillValid` / `ItemTossEvent` 缺陷、11 处进度判空缺失、短名器官提示与连续下划线维度名越界崩溃，以及 `ItemStack.EMPTY` 全局单例污染。\n- 修复破坏骨灰坛双重吐灰烬刷物品、便携骨灰坛剩 1 份灰烬下溢、`AbstractArrow` 弹射物单例污染/盾反刷弹/永久滞留、无敌实体拦截 `/kill` 与虚空、原罪怪无视规则拆基岩与吞容器、背叛吞噬者偷武器丢物与瞬耗耐久（提供配置开关）、驯服宠物狩猎模式攻击队友与无视关闭 PvP、严格 NBT 背包检查及范围技能摧毁掉落物与展示框。\n- 缓存全部 24 个实体渲染层与遗骸头盔/胸甲模型烘焙、血肉躯壳界面全部 10 种预览实体及节日日历查询；修复遗骸胸甲悬浮重影与附魔光泽丢失；为全部 30 个器官渲染层补齐缺失附属贴图安全回退；修复以太幽灵血肉进度溢出花色、以太灵魂粒子图集与旋转卡死、`ViewportEvent` 静态 `provider` 内存泄漏、骨灰坛 10 tick 永久空转（改为事件驱动）、血池空转、64³ 诅咒实体扫描、`AcidBloodstream` 每刻移效果事件风暴、只读 `getOrCreateTag()` NBT 污染与 64~256 区块追踪半径。\n- 补齐 22 个缺失方块 `MapColor`、恢复血肉方块实心遮光、移除魂钢链硬编码镐子校验并补齐标准挖掘标签，补全 1.20.1 缺失的 `etheric_blood_imbibation` 配方类型并标记自定义 JEI 配方为特殊配方（消除 11 条 `Unknown recipe category` 警告），补齐 8 张支持抢夺附魔的生物战利品表与 `en_us` / `zh_cn` / `fr_fr` TOP 本地化覆盖包。",
+        "changelogType": "markdown",
+        "displayName": "1.20.1-Forge-Sons of Sins Bug Fixes-1.0.0",
+        "gameVersions": [9990, 7498, 8326, 9638, 9639],
+        "releaseType": "release",
+        "relations": {
+          "projects": [
+            {
+              "slug": "sons-of-sins",
+              "type": "requiredDependency"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "minecraft": "1.21.1",
+      "artifact": "E:\\模组\\发cf的模组\\AAA-MCR bug 修复\\原罪之子bug修复\\1211-neoforge-sonsofsinsbugfix\\build\\libs\\sonsofsinsbugfix-1.21.1-neoforge-1.0.0.jar",
+      "sha256": "b2cbccfd700df8a58a6b602fb84eccf15554460d1e0e3d255aec35d6d2e81eef",
+      "metadata": {
+        "changelog": "## Initial Release (1.0.0)\n\n- Requires **Sons of Sins** `2.2.1` (`2.2.1d`) or newer.\n- Fixes critical 1.21.1 port regressions: `LivingDamageEvent.Pre` writing pre-armor `getOriginalDamage()` into `setNewDamage()` (restoring full armor, enchantment protection, and resistance), baby Cell Division Devourers dropping full Flesh Carcasses on death, 20 packets/sec empty `GUISyncMessage` packet storms on open portable GUIs, `GameRules.register` concurrent setup safety, Walking Bed phase-2 crouch hitbox updates and glow layer, Flesh Hoe repair material (restored from Bone to Flesh of Demise), 4 Flesh Tool tooltip keys, missing `enchantable/*` tags for Flesh & Shape-Shifting tools, missing aquatic/storage/record tags, and legacy `forge:` attributes in `sinful_church.nbt`.\n- Fixes 7 grab-execution `stopRiding()` server crashes (PlayerRevive / death-cancel mod conflicts), dedicated-server `checkGamemode` client-class crashes, `workQueue` leaks/exceptions, Urn double ash duplication & underflow, `AbstractArrow` projectile exploits, `ItemStack.EMPTY` singleton corruption, invincible entities blocking `/kill` and void damage, Sin Monster bedrock/container breaking, Betrayed Guzzler weapon-stealing bugs (with config toggle), tamed pet teammate/PvP friendly fire, strict `Inventory#contains` checks, and AOE attacks damaging dropped items/frames.\n- Caches all 24 entity `RenderLayer` models, Remnant Helmet/Chestplate `bakeLayer()` calls, all 10 Flesh Carcass GUI preview entities, and holiday `Calendar` checks; fixes Remnant Chestplate floating duplicate rendering, enchantment glint, and missing chestplate armor texture; adds safe fallback across all 30 organ render layers; fixes Ether Ghost color overflow (`> 1570`), Ether Soul particle rotation, `ViewportEvent` static `provider` memory leaks, idle Urn/Blood block ticks, 64³ Curse entity scans, `AcidBloodstream` event storms, and oversized 64–256 chunk tracking ranges.\n- Adds 22 missing block `MapColor` values, restores `FleshBlock` light occlusion, marks custom JEI recipes as special (eliminating 11 `Unknown recipe category` warnings), adds 8 entity loot tables with 1.21.1 Looting support + `sinful_church` chest loot table, and ships `en_us` / `zh_cn` / `fr_fr` TOP localization overrides.\n\n---\n\n## 首个正式版（1.0.0）\n\n- 前置要求 **Sons of Sins（原罪之子）** `2.2.1`（`2.2.1d`）及以上版本。\n- 修复 1.21.1 移植严重回归：`LivingDamageEvent.Pre` 将护甲减伤前 `getOriginalDamage()` 写回 `setNewDamage()` 导致全套护甲与抗性失效、细胞分裂幼体死亡刷出满器官血肉躯壳、便携容器界面每 tick 20 包空 `GUISyncMessage` 网络风暴、`GameRules.register` 并发注册线程安全、行走之床半血二阶段伏地碰撞箱卡死与发光层、血肉锄修复材料错设为骨头（恢复为凋亡血肉）、4 件血肉工具描述键错引、血肉/变形工具缺失 `enchantable/*` 附魔标签、水生/储存/唱片标签缺失，以及 `sinful_church.nbt` 残留旧版 `forge:` 属性。\n- 修复 7 处抓人处决 `stopRiding()` 空指针炸服（兼容 PlayerRevive 等取消死亡模组）、专用服务端 `checkGamemode` 客户端类崩溃、`workQueue` 泄漏与异常击穿、破坏骨灰坛双重刷灰烬与下溢、弹射物漏洞、`ItemStack.EMPTY` 单例污染、无敌实体拦截 `/kill` 与虚空、原罪怪无视规则拆基岩与吞容器、背叛吞噬者偷武器缺陷（提供配置开关）、驯服宠物友伤、严格背包检查及范围技能摧毁掉落物与展示框。\n- 缓存全部 24 个实体渲染层与遗骸头盔/胸甲模型烘焙、血肉躯壳界面全部 10 种预览实体及节日日历查询；修复遗骸胸甲悬浮重影、附魔光泽与缺失贴图；为全部 30 个器官渲染层补齐缺失附属贴图安全回退；修复以太幽灵溢出花色、以太灵魂粒子旋转卡死、`ViewportEvent` 静态 `provider` 内存泄漏、骨灰坛/血池空转、64³ 诅咒扫描、`AcidBloodstream` 事件风暴及 64~256 区块追踪半径。\n- 补齐 22 个缺失方块 `MapColor`、恢复血肉方块实心遮光、标记自定义 JEI 配方为特殊配方（消除 11 条 `Unknown recipe category` 警告），补齐 8 张支持 1.21.1 抢夺附魔的生物战利品表与 `sinful_church` 箱子战利品表，内置 `en_us` / `zh_cn` / `fr_fr` TOP 本地化覆盖包。",
+        "changelogType": "markdown",
+        "displayName": "1.21.1-NeoForge-Sons of Sins Bug Fixes-1.0.0",
+        "gameVersions": [11779, 10150, 11135, 9638, 9639],
+        "releaseType": "release",
+        "relations": {
+          "projects": [
+            {
+              "slug": "sons-of-sins",
+              "type": "requiredDependency"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

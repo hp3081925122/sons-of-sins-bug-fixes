@@ -1,0 +1,107 @@
+// Minecraft 1.21.1 NeoForge ModDevGradle 构建配置。
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.140'
+}
+
+version = project.mod_version
+group = project.mod_group_id
+
+repositories {
+    mavenLocal()
+    maven { url = 'https://maven.neoforged.net/releases' }
+    maven {
+        url = 'https://www.cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+    flatDir {
+        dirs 'D:/AI临时文件/原罪之子/libs_1211',
+             'E:/模组/自用工具源码+产物/Minecraft Self MCP/Minecraft Self MCP-1.21.1-NeoForge/build/libs'
+    }
+}
+
+base {
+    archivesName = "${project.mod_id}-${project.minecraft_version}-neoforge"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'selfmcp.window', 'hidden'
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+    }
+
+    mods {
+        "${project.mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    implementation "local:sons_of_sins:2.2.1d"
+    implementation "curse.maven:jei-238222:8792638"
+    // 客户端实机自动化测试桥接模组仅在非服务端任务中挂载
+    if (!gradle.startParameter.taskNames.any { it.toLowerCase().contains('server') }) {
+        def selfMcpJar = file('E:/模组/自用工具源码+产物/Minecraft Self MCP/Minecraft Self MCP-1.21.1-NeoForge/build/libs/self_mcp-1.21.1-neoforge-0.3.0.jar')
+        if (selfMcpJar.exists()) {
+            runtimeOnly "local:self_mcp-1.21.1-neoforge:0.3.0"
+        }
+    }
+}
+
+tasks.withType(ProcessResources).configureEach {
+    def replaceProperties = [
+            minecraft_version: project.minecraft_version,
+            minecraft_version_range: project.minecraft_version_range,
+            neo_version: project.neo_version,
+            neo_version_range: project.neo_version_range,
+            loader_version_range: project.loader_version_range,
+            sonsofsins_version_range: project.sonsofsins_version_range,
+            mod_id: project.mod_id,
+            mod_name: project.mod_name,
+            mod_license: project.mod_license,
+            mod_version: project.mod_version,
+            mod_authors: project.mod_authors,
+            mod_description: project.mod_description
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}

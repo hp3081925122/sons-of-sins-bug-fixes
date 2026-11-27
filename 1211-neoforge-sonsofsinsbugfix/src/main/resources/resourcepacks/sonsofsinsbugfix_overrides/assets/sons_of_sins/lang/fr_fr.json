@@ -1,0 +1,17 @@
+{
+  "entity.sons_of_sins.blood_pr": "Projectile de sang",
+  "entity.sons_of_sins.null_pr": "Projectile nul",
+  "entity.sons_of_sins.guzzler_organs": "Organes de Guzzler",
+  "entity.sons_of_sins.blud_aggressive": "Blüd",
+  "effect.sons_of_sins.hydrophobia": "Hydrophobie",
+  "jei.sons_of_sins.etheric_imbibation": "Imbibition éthérique",
+  "item.sons_of_sins.touch_no_blood": "§eVous n'avez pas de fiole de sang",
+  "item.sons_of_sins.sinful_sword.description_0": "§5§oUn outil incassable venu d'outre-tombe",
+  "item.sons_of_sins.urn.contains": "Contient actuellement %s cendres",
+  "tooltip.sons_of_sins.empty": "[Vide]",
+  "container.sons_of_sins.urn": "Urne",
+  "container.sons_of_sins.flesh_carcass": "Carcasse de chair",
+  "container.sons_of_sins.puppet_of_strife": "Marionnette de discorde",
+  "death.attack.blud_blood_damage.item": "%1$s a été entraîné en enfer par %2$s avec %3$s",
+  "death.attack.blud_blood_damage.player": "%1$s a été entraîné en enfer en fuyant %2$s"
+}
