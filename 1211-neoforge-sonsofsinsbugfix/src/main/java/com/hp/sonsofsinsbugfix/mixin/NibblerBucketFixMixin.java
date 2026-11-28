@@ -1,16 +1,34 @@
 package com.hp.sonsofsinsbugfix.mixin;
 
+import java.util.Objects;
+import net.mcreator.sonsofsins.entity.NibblerEntity;
 import net.mcreator.sonsofsins.procedures.NibblerBucketedProcedure;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 修复 1.21.1 NibblerBucketedProcedure：支持副手持桶、防止对已移除实体重复装桶、成功后取消交互事件。
+ * 修复 1.21.1 NibblerBucketedProcedure：
+ * 1. 支持副手持桶；
+ * 2. 防止对已移除或濒死实体重复装桶；
+ * 3. 客户端提前预测装桶并消费交互，阻止穿透到 BucketItem#use 倒出幽灵水/岩浆；
+ * 4. 服务端装桶成功后显式设置 InteractionResult.CONSUME 再取消事件。
  */
 @Mixin(value = NibblerBucketedProcedure.class, remap = false)
 public abstract class NibblerBucketFixMixin {
@@ -23,16 +41,71 @@ public abstract class NibblerBucketFixMixin {
     }
 
     @Inject(method = "onRightClickEntity", at = @At("HEAD"), cancellable = true)
-    private static void sonsofsinsbugfix$skipRemovedTarget(PlayerInteractEvent.EntityInteract event, CallbackInfo ci) {
-        if (event == null || event.getTarget() == null || event.getTarget().isRemoved()) {
+    private static void sonsofsinsbugfix$guardAndClientPredict(PlayerInteractEvent.EntityInteract event, CallbackInfo ci) {
+        if (event == null || event.getTarget() == null) {
             ci.cancel();
+            return;
+        }
+        Entity target = event.getTarget();
+        if (target.isRemoved() || (target instanceof LivingEntity living && living.isDeadOrDying())) {
+            ci.cancel();
+            return;
+        }
+        // 客户端根据实体归属与抗火器官提前消费交互，防止穿透到 BucketItem#use 倒出幽灵流体
+        if (event.getLevel() != null && event.getLevel().isClientSide()
+                && target instanceof NibblerEntity nibbler
+                && event.getEntity() != null) {
+            Player player = event.getEntity();
+            if (!nibbler.isTame() || nibbler.isOwnedBy(player)) {
+                Item requiredBucket = sonsofsinsbugfix$requiresLavaBucket(nibbler)
+                        ? Items.LAVA_BUCKET
+                        : Items.WATER_BUCKET;
+                boolean mainMatches = player.getMainHandItem().getItem() == requiredBucket;
+                boolean offMatches = player.getOffhandItem().getItem() == requiredBucket;
+                if (mainMatches || offMatches) {
+                    boolean activeHandMatches = player.getItemInHand(event.getHand()).getItem() == requiredBucket;
+                    event.setCancellationResult(activeHandMatches ? InteractionResult.SUCCESS : InteractionResult.CONSUME);
+                    event.setCanceled(true);
+                    ci.cancel();
+                }
+            }
         }
     }
 
     @Inject(method = "onRightClickEntity", at = @At("TAIL"))
     private static void sonsofsinsbugfix$cancelEventAfterBucketed(PlayerInteractEvent.EntityInteract event, CallbackInfo ci) {
         if (event != null && event.getTarget() != null && event.getTarget().isRemoved()) {
+            event.setCancellationResult(InteractionResult.CONSUME);
             event.setCanceled(true);
         }
+    }
+
+    @Unique
+    private static boolean sonsofsinsbugfix$requiresLavaBucket(NibblerEntity nibbler) {
+        if (nibbler.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+            return true;
+        }
+        // 客户端不同步生物药水表，补充检查已同步的护甲槽器官（如炽足兽肌肉）是否附带抗火效果
+        return sonsofsinsbugfix$hasFireResistanceFood(nibbler.getItemBySlot(EquipmentSlot.FEET))
+                || sonsofsinsbugfix$hasFireResistanceFood(nibbler.getItemBySlot(EquipmentSlot.LEGS))
+                || sonsofsinsbugfix$hasFireResistanceFood(nibbler.getItemBySlot(EquipmentSlot.CHEST))
+                || sonsofsinsbugfix$hasFireResistanceFood(nibbler.getItemBySlot(EquipmentSlot.HEAD));
+    }
+
+    @Unique
+    private static boolean sonsofsinsbugfix$hasFireResistanceFood(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        if (food == null) {
+            return false;
+        }
+        for (FoodProperties.PossibleEffect possible : food.effects()) {
+            if (possible.effect() != null && Objects.equals(possible.effect().getEffect(), MobEffects.FIRE_RESISTANCE)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

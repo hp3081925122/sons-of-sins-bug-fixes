@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "minecraft": "1.20.1",
+      "artifact": "E:\\模组\\发cf的模组\\AAA-MCR bug 修复\\原罪之子bug修复\\1201-forge-sonsofsinsbugfix\\build\\libs\\sonsofsinsbugfix-1.20.1-forge-1.0.1.jar",
+      "sha256": "e280eb5c887b064baac68eb4c4ad6d303f2776d2584d3328507a8bd539bd7df9",
+      "metadata": {
+        "changelog": "## 1.0.1\n\n- Fixed client-side `NibblerBucketedProcedure` right-click interaction fall-through: when bucketing a Nibbler (including untamed Nibblers or Nibblers equipped with Fire-Resistance organs such as Strider Muscle), the client now predicts the bucket pickup and consumes the entity interaction instead of falling through to `BucketItem#use` and placing ghost water/lava.\n- Explicitly set `InteractionResult.CONSUME` when cancelling `EntityInteract` after server-side Nibbler bucketing, and guarded against bucketing dying (`isDeadOrDying()`) Nibblers.\n- Added dedicated server GameTest coverage for Nibbler main-hand/off-hand bucketing, ownership protection, Strider Muscle Lava Bucket handling, dying-entity protection, and bucket placement.\n\n---\n\n## 1.0.1\n\n- 修复客户端装桶交互穿透问题：右键装起 Nibbler（含未驯服个体或装备炽足兽肌肉等抗火器官的个体）时，客户端会提前识别归属权与所需桶类型并消费实体交互，阻止穿透到 `BucketItem#use` 凭空倒出幽灵水/岩浆。\n- 服务端完成 Nibbler 装桶并取消 `EntityInteract` 事件时显式设置 `InteractionResult.CONSUME`（不再沿用默认 `PASS`），并拦截对濒死（`isDeadOrDying()`）Nibbler 装桶。\n- 补充 Nibbler 主副手装桶、驯服归属校验、炽足兽肌肉岩浆桶、濒死防装与放桶恢复的服务端 GameTest 回归用例。",
+        "changelogType": "markdown",
+        "displayName": "1.20.1-Forge-Sons of Sins Bug Fixes-1.0.1",
+        "gameVersions": [9990, 7498, 8326, 9638, 9639],
+        "releaseType": "release",
+        "relations": {
+          "projects": [
+            {
+              "slug": "sons-of-sins",
+              "type": "requiredDependency"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "minecraft": "1.21.1",
+      "artifact": "E:\\模组\\发cf的模组\\AAA-MCR bug 修复\\原罪之子bug修复\\1211-neoforge-sonsofsinsbugfix\\build\\libs\\sonsofsinsbugfix-1.21.1-neoforge-1.0.1.jar",
+      "sha256": "644b13c94b93cbe6a411b3e3cd49ff9d07ab524d0a02ff409c7201e193ed4ae5",
+      "metadata": {
+        "changelog": "## 1.0.1\n\n- Fixed client-side `NibblerBucketedProcedure` right-click interaction fall-through: when bucketing a Nibbler (including untamed Nibblers or Nibblers equipped with Fire-Resistance organs such as Strider Muscle), the client now predicts the bucket pickup and consumes the entity interaction instead of falling through to `BucketItem#use` and placing ghost water/lava.\n- Explicitly set `InteractionResult.CONSUME` when cancelling `EntityInteract` after server-side Nibbler bucketing, and guarded against bucketing dying (`isDeadOrDying()`) Nibblers.\n- Added dedicated server GameTest coverage for Nibbler main-hand/off-hand bucketing, ownership protection, Strider Muscle Lava Bucket handling, dying-entity protection, and bucket placement.\n\n---\n\n## 1.0.1\n\n- 修复客户端装桶交互穿透问题：右键装起 Nibbler（含未驯服个体或装备炽足兽肌肉等抗火器官的个体）时，客户端会提前识别归属权与所需桶类型并消费实体交互，阻止穿透到 `BucketItem#use` 凭空倒出幽灵水/岩浆。\n- 服务端完成 Nibbler 装桶并取消 `EntityInteract` 事件时显式设置 `InteractionResult.CONSUME`（不再沿用默认 `PASS`），并拦截对濒死（`isDeadOrDying()`）Nibbler 装桶。\n- 补充 Nibbler 主副手装桶、驯服归属校验、炽足兽肌肉岩浆桶、濒死防装与放桶恢复的服务端 GameTest 回归用例。",
+        "changelogType": "markdown",
+        "displayName": "1.21.1-NeoForge-Sons of Sins Bug Fixes-1.0.1",
+        "gameVersions": [11779, 10150, 11135, 9638, 9639],
+        "releaseType": "release",
+        "relations": {
+          "projects": [
+            {
+              "slug": "sons-of-sins",
+              "type": "requiredDependency"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import net.mcreator.sonsofsins.entity.BloodPrEntity;
 import net.mcreator.sonsofsins.entity.BludAggressiveEntity;
 import net.mcreator.sonsofsins.entity.BludTradeEntity;
 import net.mcreator.sonsofsins.entity.DevourerEntity;
+import net.mcreator.sonsofsins.entity.NibblerEntity;
 import net.mcreator.sonsofsins.entity.NullPrEntity;
 import net.mcreator.sonsofsins.entity.WalkingBedEntity;
 import net.mcreator.sonsofsins.entity.WistiverJawEntity;
@@ -26,9 +27,11 @@ import net.mcreator.sonsofsins.procedures.DevourerEntityDiesProcedure;
 import net.mcreator.sonsofsins.procedures.FleshCarcassSpecialInformation2Procedure;
 import net.mcreator.sonsofsins.procedures.FleshCarcassSpecialInformation3Procedure;
 import net.mcreator.sonsofsins.procedures.FleshCarcassSpecialInformationProcedure;
+import net.mcreator.sonsofsins.procedures.NibblerBucketRightclickedOnBlockProcedure;
 import net.mcreator.sonsofsins.procedures.PuppetOfStrifeSpecialInformationProcedure;
 import net.mcreator.sonsofsins.procedures.UrnItemInInventoryTickProcedure;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
@@ -40,12 +43,17 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -311,6 +319,106 @@ public final class SonsOfSinsBugFixGameTests {
             LootTable table = level.getServer().reloadableRegistries().getLootTable(key);
             assertTrue(helper, table != LootTable.EMPTY, "缺失战利品表: " + key.location());
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void nibblerBucketingAndPlacementSafe(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+
+        // 1. 未驯服 Nibbler 主手水桶装桶，校验返回 CONSUME 且成功替换为鱼桶
+        NibblerEntity wildNibbler = helper.spawn(SonsOfSinsModEntities.NIBBLER.get(), new BlockPos(1, 2, 1));
+        wildNibbler.setNoAi(true);
+        wildNibbler.setItemSlot(EquipmentSlot.FEET, new ItemStack(SonsOfSinsModItems.CREEPER_RIBS.get()));
+        wildNibbler.setItemSlot(EquipmentSlot.LEGS, new ItemStack(SonsOfSinsModItems.HEART.get()));
+        wildNibbler.setItemSlot(EquipmentSlot.CHEST, new ItemStack(SonsOfSinsModItems.RAVAGER_MUSCLE.get()));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+
+        InteractionResult mainResult = player.interactOn(wildNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, mainResult == InteractionResult.CONSUME, "主手水桶装 Nibbler 应返回 CONSUME，实际: " + mainResult);
+        assertTrue(helper, wildNibbler.isRemoved(), "装桶后 Nibbler 应已被移除");
+        assertTrue(helper, player.getMainHandItem().is(SonsOfSinsModItems.NIBBLER_BUCKET.get()), "主手应变为 Nibbler 水桶");
+        ItemStack filledBucket = player.getMainHandItem().copy();
+
+        // 2. 已驯服 Nibbler 副手水桶装桶 + 对已移除实体再次交互不得重复刷桶
+        NibblerEntity tamedNibbler = new NibblerEntity(SonsOfSinsModEntities.NIBBLER.get(), level) {
+            @Override
+            public LivingEntity getOwner() {
+                return player.getUUID().equals(this.getOwnerUUID()) ? player : super.getOwner();
+            }
+        };
+        BlockPos tamedPos = helper.absolutePos(new BlockPos(2, 2, 1));
+        tamedNibbler.moveTo(tamedPos.getX() + 0.5, tamedPos.getY(), tamedPos.getZ() + 0.5);
+        tamedNibbler.setNoAi(true);
+        tamedNibbler.tame(player);
+        level.addFreshEntity(tamedNibbler);
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.WATER_BUCKET));
+
+        InteractionResult offResult = player.interactOn(tamedNibbler, InteractionHand.OFF_HAND);
+        assertTrue(helper, offResult == InteractionResult.CONSUME, "副手水桶装 Nibbler 应返回 CONSUME，实际: " + offResult);
+        assertTrue(helper, tamedNibbler.isRemoved(), "副手装桶后 Nibbler 应已被移除");
+        assertTrue(helper, player.getOffhandItem().is(SonsOfSinsModItems.NIBBLER_BUCKET.get()), "副手应变为 Nibbler 水桶");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        player.interactOn(tamedNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, player.getMainHandItem().is(Items.WATER_BUCKET), "对已移除 Nibbler 二次交互不应重复刷出鱼桶");
+
+        // 2b. 其他玩家驯服的 Nibbler 不得被当前玩家装走
+        Player otherPlayer = helper.makeMockPlayer(GameType.SURVIVAL);
+        NibblerEntity othersNibbler = helper.spawn(SonsOfSinsModEntities.NIBBLER.get(), new BlockPos(2, 2, 3));
+        othersNibbler.setNoAi(true);
+        othersNibbler.tame(otherPlayer);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        player.interactOn(othersNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, !othersNibbler.isRemoved() && player.getMainHandItem().is(Items.WATER_BUCKET), "他人驯服的 Nibbler 不应被装桶");
+
+        // 3. 装备炽足兽肌肉并拥有抗火效果的 Nibbler：水桶不触发，岩浆桶可正常装桶并返回 CONSUME
+        NibblerEntity lavaNibbler = helper.spawn(SonsOfSinsModEntities.NIBBLER.get(), new BlockPos(3, 2, 1));
+        lavaNibbler.setNoAi(true);
+        lavaNibbler.setItemSlot(EquipmentSlot.CHEST, new ItemStack(SonsOfSinsModItems.STRIDER_MUSCLE.get()));
+        lavaNibbler.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 200, 0));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        player.interactOn(lavaNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, !lavaNibbler.isRemoved() && player.getMainHandItem().is(Items.WATER_BUCKET), "抗火 Nibbler 不应被水桶装起");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.LAVA_BUCKET));
+        InteractionResult lavaResult = player.interactOn(lavaNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, lavaResult == InteractionResult.CONSUME, "岩浆桶装抗火 Nibbler 应返回 CONSUME，实际: " + lavaResult);
+        assertTrue(helper, lavaNibbler.isRemoved(), "岩浆桶装桶后 Nibbler 应已被移除");
+        assertTrue(helper, player.getMainHandItem().is(SonsOfSinsModItems.NIBBLER_LAVA_BUCKET.get()), "主手应变为 Nibbler 岩浆桶");
+
+        // 4. 空桶不得装桶；濒死 Nibbler 不得被水桶装起
+        NibblerEntity dyingNibbler = helper.spawn(SonsOfSinsModEntities.NIBBLER.get(), new BlockPos(1, 2, 3));
+        dyingNibbler.setNoAi(true);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
+        player.interactOn(dyingNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, !dyingNibbler.isRemoved() && player.getMainHandItem().is(Items.BUCKET), "空桶不应装起 Nibbler");
+
+        dyingNibbler.setHealth(0.0F);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        player.interactOn(dyingNibbler, InteractionHand.MAIN_HAND);
+        assertTrue(helper, player.getMainHandItem().is(Items.WATER_BUCKET), "濒死 Nibbler 不应被水桶装起");
+
+        // 5. 放桶恢复实体与空自定义数据桶不崩溃
+        BlockPos floorRel = new BlockPos(2, 1, 2);
+        BlockPos floorAbs = helper.absolutePos(floorRel);
+        helper.setBlock(floorRel, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        player.setItemInHand(InteractionHand.MAIN_HAND, filledBucket);
+        NibblerBucketRightclickedOnBlockProcedure.execute(
+                level, floorAbs.getX(), floorAbs.getY(), floorAbs.getZ(), Direction.UP, player, filledBucket);
+        assertTrue(helper, player.getMainHandItem().is(Items.BUCKET), "放桶后生存玩家主手应恢复为空桶");
+        List<NibblerEntity> released = level.getEntitiesOfClass(NibblerEntity.class, new AABB(floorAbs.above()).inflate(2.0));
+        assertTrue(helper, !released.isEmpty(), "放桶后应在目标位置生成 Nibbler");
+
+        ItemStack emptyDataBucket = new ItemStack(SonsOfSinsModItems.NIBBLER_BUCKET.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, emptyDataBucket);
+        NibblerBucketRightclickedOnBlockProcedure.execute(
+                level, floorAbs.getX(), floorAbs.getY(), floorAbs.getZ(), Direction.UP, player, emptyDataBucket);
+        assertTrue(helper, player.getMainHandItem().is(Items.BUCKET), "空数据的 Nibbler 水桶放桶不应崩溃");
         helper.succeed();
     }
 }
